@@ -1,4 +1,6 @@
-var dataUrl = "https://d-shen.xyz/biblescheduler/data.php";
+var dataUrl = "data.php";
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+    dataUrl = "https://d-shen.xyz/biblescheduler/" + dataUrl;    
 var lastVersion = "";
 var bible;
 function update(data) {
