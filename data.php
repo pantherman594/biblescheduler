@@ -44,14 +44,30 @@
         $split_by = $mysqli->real_escape_string($_POST['splitBy']);
         $expires = round(strtotime('+' . $days . ' days 10 days') / 100);
         $passages = $mysqli->real_escape_string($_POST['passages']);
-        do {
-            $id = substr(preg_replace("/[^a-zA-Z0-9]/", "", base64_encode(openssl_random_pseudo_bytes(8))), 0, 8);
-        } while (($result = $mysqli->query("SELECT * FROM bibledata WHERE id='" . $id . "'")) && $result->fetch_row());
-        if ($mysqli->query("INSERT INTO bibledata (id, version, days, split_by, passages, expires) VALUES ('". $id . "', '" . $version . "', " . $days . ", '" . $split_by . "', '" . $passages . "', " . $expires . ")")) {
-            echo $id;
-            removeExpired();
-            exit();
-        }
+	if ($result = $mysqli->query("SELECT id,expires FROM bibledata WHERE version='$version' AND days=$days AND split_by='$split_by' AND passages='$passages'")) {
+            if ($row = $result ->fetch_assoc()) {
+                $id = $row['id'];
+                $expires_pre = $row['expires'];
+                $expires = round(strtotime('+20 days') / 100);
+
+		$result->close();
+                if ($expires > $expires_pre) {
+                    $mysqli->query("UPDATE bibledata SET expires=" . $expires . " WHERE id='" . $id . "'");
+                }
+                echo $id;
+                removeExpired();
+                exit();
+	    }
+	} else {
+            do {
+                $id = substr(preg_replace("/[^a-zA-Z0-9]/", "", base64_encode(openssl_random_pseudo_bytes(8))), 0, 8);
+            } while (($result = $mysqli->query("SELECT * FROM bibledata WHERE id='" . $id . "'")) && $result->fetch_row());
+            if ($mysqli->query("INSERT INTO bibledata (id, version, days, split_by, passages, expires) VALUES ('". $id . "', '" . $version . "', " . $days . ", '" . $split_by . "', '" . $passages . "', " . $expires . ")")) {
+                echo $id;
+                removeExpired();
+                exit();
+            }
+	}
     }
     echo "Err";
     removeExpired();
