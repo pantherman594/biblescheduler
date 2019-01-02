@@ -6,6 +6,7 @@ var bible;
 function update(data) {
     if (data) {
         $("#version > select").val(data.version);
+        $("#split > select").val(data.splitBy);
     }
     var version = $("#version > select").val();
     if (version != lastVersion) {
@@ -35,7 +36,8 @@ function save() {
     if (save) {
         var version = $("#version > select").val();
         var days = Math.round($("#days").val());
-        $.post(dataUrl, { version: version, days: days, passages: passages.join(";") }, function (data) {
+        var splitBy = $("#split > select").val();
+        $.post(dataUrl, { version: version, splitBy: splitBy, days: days, passages: passages.join(";") }, function (data) {
             if (data !== "Err") window.history.pushState("", "", "?id=" + data);
         });
     }
@@ -44,6 +46,8 @@ function save() {
 function updateInfo() {
     var days = Math.round($("#days").val());
     if (days === "" || isNaN(days) || days < 1) days = 1;
+
+    var splitBy = $("#split > select").val();
     var totalVerses = 0;
     var totalWords = 0;
     var chapters = [];
@@ -84,7 +88,6 @@ function updateInfo() {
         var sectionWords = 0;
 
         // todo: change based on selection
-        var check = "words";
         for (var day = 1; day <= days; day++) {
             for (var i = lastChapter; i < chapters.length; i++) {
                 if (day == days) {
@@ -97,7 +100,7 @@ function updateInfo() {
                 var oldDiff;
                 var newDiff;
 
-                if (check === "chapters") {
+                if (splitBy === "chapters") {
                     oldDiff = Math.abs(sectionChapters - dailyChapters * day);
                     sectionChapters++;
                     newDiff = Math.abs(sectionChapters - dailyChapters * day);
@@ -106,7 +109,7 @@ function updateInfo() {
                         i--;
                         sectionChapters--;
                     }
-                } else if (check === "verses") {
+                } else if (splitBy === "verses") {
                     oldDiff = Math.abs(sectionVerses - dailyVerses * day);
                     sectionVerses += numVerses;
                     newDiff = Math.abs(sectionVerses - dailyVerses * day);
@@ -115,7 +118,7 @@ function updateInfo() {
                         i--;
                         sectionVerses -= numVerses;
                     }
-                } else if (check === "words") {
+                } else if (splitBy === "words") {
                     oldDiff = Math.abs(sectionWords - dailyWords * day);
                     sectionWords += wordCount;
                     newDiff = Math.abs(sectionWords - dailyWords * day);
@@ -125,7 +128,7 @@ function updateInfo() {
                         sectionWords -= wordCount;
                     }
                 } else {
-                    console.log("Error: Invalid check type!");
+                    console.log("Error: Invalid split type!");
                     return;
                 }
 

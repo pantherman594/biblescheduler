@@ -21,12 +21,13 @@
             if ($row = $result->fetch_assoc()) {
                 $version = $row['version'];
                 $days = $row['days'];
+                $split_by = $row['split_by'];
                 $expires_pre = $row['expires'];
                 $expires = round(strtotime('+20 days') / 100);
                 $passages = explode(";", $row['passages']);
                 $result->close();
 
-                $res = array('version' => $version, 'days' => $days, 'passages' => $passages);
+                $res = array('version' => $version, 'days' => $days, 'splitBy' => $split_by, 'passages' => $passages);
                 header('Content-Type: application/json');
                 echo json_encode($res);
 
@@ -37,15 +38,16 @@
                 exit();
             }
         }
-    } elseif (isset($_POST['version']) && isset($_POST['days']) && isset($_POST['passages'])) {
+    } elseif (isset($_POST['version']) && isset($_POST['days']) && isset($_POST['splitBy']) && isset($_POST['passages'])) {
         $version = $mysqli->real_escape_string($_POST['version']);
         $days = $mysqli->real_escape_string($_POST['days']);
+        $split_by = $mysqli->real_escape_string($_POST['splitBy']);
         $expires = round(strtotime('+' . $days . ' days 10 days') / 100);
         $passages = $mysqli->real_escape_string($_POST['passages']);
         do {
             $id = substr(preg_replace("/[^a-zA-Z0-9]/", "", base64_encode(openssl_random_pseudo_bytes(8))), 0, 8);
         } while (($result = $mysqli->query("SELECT * FROM bibledata WHERE id='" . $id . "'")) && $result->fetch_row());
-        if ($mysqli->query("INSERT INTO bibledata (id, version, days, passages, expires) VALUES ('". $id . "', '" . $version . "', " . $days . ", '" . $passages . "', " . $expires . ")")) {
+        if ($mysqli->query("INSERT INTO bibledata (id, version, days, split_by, passages, expires) VALUES ('". $id . "', '" . $version . "', " . $days . ", '" . $split_by . "', '" . $passages . "', " . $expires . ")")) {
             echo $id;
             removeExpired();
             exit();

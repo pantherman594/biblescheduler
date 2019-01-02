@@ -55,6 +55,14 @@
                 </select>
             </div>
             <div>Days: <input type="text" id="days" value="1"/></div>
+            <div id="split">
+                Split By:
+                <select onchange="update();">
+                    <option value="chapters">Chapters</option>
+                    <option value="verses">Verses</option>
+                    <option selected value="words">Words</option>
+                </select>
+            </div>
             <div><button onclick="save()">Save</button></div>
         </div>
         <div id="info">
